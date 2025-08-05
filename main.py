@@ -19,7 +19,7 @@ SCRIPT_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/mai
 GITHUB_BUILD_INFO_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/vs_info.json"  # URL for build info (vs_info.json)
 
 # === Store version in the script ===
-__version__ = "1.0"  # Version of the current script
+__version__ = "1.1"  # Version of the current script
 
 # Function to check if the script is up to date by comparing it with the GitHub version info
 def check_for_update():
@@ -106,10 +106,18 @@ def manual_update():
         # No need to save version info locally, just restart with the updated script
         restart_script()  # Restart the script with the updated version
     else:
+        # Correctly display the local version (__version__) rather than default 0.0
         print(f"✅ You are on the latest version {__version__}.")
-        print(f"Build Date: {latest_build_info.get('build_date', 'N/A')}")
-        print(f"Last Updated: {latest_build_info.get('updated_on', 'N/A')}")
-        print(f"Required Packages: {', '.join(latest_build_info.get('required_packages', []))}")
+        
+        # Fetching build details from the 'build_info' section of vs_info.json
+        build_info = latest_build_info.get("build_info", {})
+        build_date = build_info.get('build_date', 'N/A')
+        last_updated = build_info.get('updated_on', 'N/A')
+        required_packages = build_info.get('required_packages', [])
+
+        print(f"Build Date: {build_date}")
+        print(f"Last Updated: {last_updated}")
+        print(f"Required Packages: {', '.join(required_packages) if required_packages else 'None'}")
 
 # === Main ===
 
