@@ -21,7 +21,13 @@ def download_script():
 def install_requirements():
     print("Installing required packages...")
     for package in REQUIREMENTS:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+        try:
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install", "--break-system-packages", package
+            ])
+        except subprocess.CalledProcessError:
+            print(f"Failed to install {package}. Make sure your Python allows --break-system-packages.")
+            sys.exit(1)
 
 def run_script():
     print(f"Running {MAIN_SCRIPT}...")
