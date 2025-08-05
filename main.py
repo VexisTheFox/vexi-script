@@ -4,11 +4,76 @@ import webbrowser
 import requests
 import pygame
 from io import BytesIO
+import urllib.request
+import subprocess
+import json
+import sys
+from datetime import datetime
 
 # === CONFIG ===
 GUNS_USERNAME = "vexi.tech"
 TIKTOK_USERNAME = "@v3x1.tech"
 SOUND_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/rawr.mp3"  # update this
+VERSION_FILE = "vs_info.json"  # File to store the local version
+SCRIPT_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/main.py"  # URL to the latest script (main.py)
+GITHUB_BUILD_INFO_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/vs_info.json"  # URL for build info (vs_info.json)
+
+# === Store version in the script ===
+__version__ = "1.0"  # Version of the current script
+
+# Function to load current version and build info from vs_info.json
+def load_current_version_and_info():
+    if os.path.exists(VERSION_FILE):
+        with open(VERSION_FILE, "r") as file:
+            data = json.load(file)
+            version = data.get("version", "0.0")
+            build_info = data.get("build_info", {})
+            return version, build_info
+    else:
+        return "0.0", {}  # Default values if the file doesn't exist
+
+# Function to save the current version and build info in vs_info.json
+def save_current_version_and_info(version, build_info):
+    with open(VERSION_FILE, "w") as file:
+        json.dump({"version": version, "build_info": build_info}, file)
+
+# Function to check if the script is up to date by comparing it with the GitHub version info
+def check_for_update():
+    print("🔍 Checking for updates...")
+    try:
+        # Get the build info from the GitHub repository (latest version)
+        latest_build_info = requests.get(GITHUB_BUILD_INFO_URL).json()
+        latest_version = latest_build_info.get("version", "0.0")
+        current_version = __version__  # Fetching the version from the script itself
+
+        print(f"Current version: {current_version}")
+        print(f"Latest version: {latest_version}")
+
+        if latest_version != current_version:
+            print("🆕 A new version is available!")
+            return True, latest_version, latest_build_info
+        else:
+            print("✅ You have the latest version.")
+            return False, current_version, latest_build_info
+    except Exception as e:
+        print(f"Error checking for updates: {e}")
+        return False, __version__, {}
+
+# Function to update the script by downloading the latest `main.py`
+def update_script():
+    print("🔄 Updating the script...")
+    try:
+        urllib.request.urlretrieve(SCRIPT_URL, "main.py")
+        print("✅ Script updated successfully!")
+    except Exception as e:
+        print(f"Error updating the script: {e}")
+
+# Function to restart the script after update
+def restart_script():
+    print("🔄 Restarting the script...")
+    subprocess.run([sys.executable, "main.py"])
+
+# === Existing Functions ===
 
 def clear_screen():
     os.system("cls" if platform.system() == "Windows" else "clear")
@@ -18,7 +83,8 @@ def show_menu():
     print("1. Show my guns.lol")
     print("2. Show my TikTok")
     print("3. Play Rawr")
-    print("4. Exit")
+    print("4. Check for Updates")
+    print("5. Exit")
 
 def show_guns():
     url = f"https://guns.lol/{GUNS_USERNAME}"
@@ -45,11 +111,31 @@ def play_sound_from_url(url):
     except Exception as e:
         print(f"Error: {e}")
 
+# === Manual Update Function ===
+
+def manual_update():
+    update_available, latest_version, latest_build_info = check_for_update()
+
+    if update_available:
+        print(f"🔄 New version {latest_version} is available!")
+        update_script()  # Update the script
+        # Save the new version and build info
+        save_current_version_and_info(latest_version, latest_build_info.get("build_info", {}))  
+        restart_script()  # Restart the script with the updated version
+    else:
+        current_version, build_info = load_current_version_and_info()
+        print(f"✅ You are on the latest version {current_version}.")
+        print(f"Build Date: {build_info.get('build_date', 'N/A')}")
+        print(f"Last Updated: {build_info.get('updated_on', 'N/A')}")
+        print(f"Required Packages: {', '.join(build_info.get('required_packages', []))}")
+
+# === Main ===
+
 def main():
     while True:
         clear_screen()
         show_menu()
-        choice = input("Select option (1-4): ")
+        choice = input("Select option (1-5): ")
 
         if choice == "1":
             show_guns()
@@ -58,6 +144,8 @@ def main():
         elif choice == "3":
             play_sound_from_url(SOUND_URL)
         elif choice == "4":
+            manual_update()  # Call the manual update function
+        elif choice == "5":
             print("Goodbye.")
             break
         else:
