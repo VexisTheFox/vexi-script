@@ -1,0 +1,8 @@
+{
+  "version": "1.0",
+  "build_info": {
+    "build_date": "2025-08-05",
+    "updated_on": "2025-08-05",
+    "required_packages": ["pygame", "requests"]
+  }
+}
