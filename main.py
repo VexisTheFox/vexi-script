@@ -14,28 +14,12 @@ from datetime import datetime
 GUNS_USERNAME = "vexi.tech"
 TIKTOK_USERNAME = "@v3x1.tech"
 SOUND_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/rawr.mp3"  # update this
-VERSION_FILE = "vs_info.json"  # File to store the local version
+VERSION_FILE = "vs_info.json"  # File to store version info remotely
 SCRIPT_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/main.py"  # URL to the latest script (main.py)
 GITHUB_BUILD_INFO_URL = "https://raw.githubusercontent.com/VexisTheFox/vexi-script/main/vs_info.json"  # URL for build info (vs_info.json)
 
 # === Store version in the script ===
 __version__ = "1.0"  # Version of the current script
-
-# Function to load current version and build info from vs_info.json
-def load_current_version_and_info():
-    if os.path.exists(VERSION_FILE):
-        with open(VERSION_FILE, "r") as file:
-            data = json.load(file)
-            version = data.get("version", "0.0")
-            build_info = data.get("build_info", {})
-            return version, build_info
-    else:
-        return "0.0", {}  # Default values if the file doesn't exist
-
-# Function to save the current version and build info in vs_info.json
-def save_current_version_and_info(version, build_info):
-    with open(VERSION_FILE, "w") as file:
-        json.dump({"version": version, "build_info": build_info}, file)
 
 # Function to check if the script is up to date by comparing it with the GitHub version info
 def check_for_update():
@@ -119,15 +103,13 @@ def manual_update():
     if update_available:
         print(f"🔄 New version {latest_version} is available!")
         update_script()  # Update the script
-        # Save the new version and build info
-        save_current_version_and_info(latest_version, latest_build_info.get("build_info", {}))  
+        # No need to save version info locally, just restart with the updated script
         restart_script()  # Restart the script with the updated version
     else:
-        current_version, build_info = load_current_version_and_info()
-        print(f"✅ You are on the latest version {current_version}.")
-        print(f"Build Date: {build_info.get('build_date', 'N/A')}")
-        print(f"Last Updated: {build_info.get('updated_on', 'N/A')}")
-        print(f"Required Packages: {', '.join(build_info.get('required_packages', []))}")
+        print(f"✅ You are on the latest version {__version__}.")
+        print(f"Build Date: {latest_build_info.get('build_date', 'N/A')}")
+        print(f"Last Updated: {latest_build_info.get('updated_on', 'N/A')}")
+        print(f"Required Packages: {', '.join(latest_build_info.get('required_packages', []))}")
 
 # === Main ===
 
